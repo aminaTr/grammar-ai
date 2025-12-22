@@ -6,62 +6,66 @@ import CopyButton from "../CopyButton";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 
 interface TextEditorProps {
-  activeText: string;
+  originalText: string;
+  derivedText: string;
   corrections: Correction[];
   onAccept: (id: string) => void;
   onReject: (id: string) => void;
 }
+type TextSegment =
+  | string
+  | {
+      correction: Correction;
+    };
 
 const TextEditor: React.FC<TextEditorProps> = ({
-  activeText,
+  originalText,
+  derivedText,
   corrections,
   onAccept,
   onReject,
 }) => {
-  const [textSegments, setTextSegments] = useState<
-    (string | { correction: Correction; text: string })[]
-  >([]);
+  const [textSegments, setTextSegments] = useState<TextSegment[]>([]);
 
   useEffect(() => {
-    if (!corrections.length) {
-      setTextSegments([activeText]);
-      return;
-    }
+    if (!corrections.length) return;
 
-    const segments: (string | { correction: Correction; text: string })[] = [];
+    const segments: TextSegment[] = [];
     let lastIndex = 0;
 
-    // Sort corrections by startIndex to handle sequentially
-    const sortedCorrections = [...corrections].sort(
-      (a, b) => a.startIndex - b.startIndex
-    );
+    const sorted = [...corrections].sort((a, b) => a.startIndex - b.startIndex);
 
-    sortedCorrections.forEach((c) => {
+    sorted.forEach((c) => {
       if (c.startIndex > lastIndex) {
-        segments.push(activeText.slice(lastIndex, c.startIndex));
+        segments.push(originalText.slice(lastIndex, c.startIndex));
       }
-      segments.push({
-        correction: c,
-        text: activeText.slice(c.startIndex, c.endIndex),
-      });
+
+      if (
+        c.startIndex === originalText.length &&
+        lastIndex === originalText.length &&
+        c.startIndex === c.endIndex
+      ) {
+        c.original_segment = " ";
+      }
+      segments.push({ correction: c });
       lastIndex = c.endIndex;
     });
-
-    if (lastIndex < activeText.length) {
-      segments.push(activeText.slice(lastIndex));
+    console.log("segments", segments);
+    if (lastIndex < originalText.length) {
+      segments.push(originalText.slice(lastIndex));
     }
 
     setTextSegments(segments);
-  }, [activeText, corrections]);
+  }, [originalText, corrections]);
 
   const getUnderlineColor = (type: string) => {
     switch (type) {
       case "spelling":
-        return "underline decoration-red-500";
+        return "underline decoration-red-500 underline-offset-4 decoration-wavy";
       case "punctuation":
-        return "underline decoration-blue-500";
+        return "underline decoration-2 underline-offset-4 decoration-blue-500";
       case "grammar":
-        return "underline decoration-yellow-500";
+        return "underline decoration-dotted decoration-2 underline-offset-4 decoration-yellow-500";
       default:
         return "";
     }
@@ -71,13 +75,25 @@ const TextEditor: React.FC<TextEditorProps> = ({
     <div className="rounded-md border bg-muted p-4 space-y-2">
       <p className="text-sm text-muted-foreground mb-4 justify-between flex">
         Hover over corrections to accept/reject:
-        <CopyButton textToCopy={activeText} />
+        <CopyButton textToCopy={derivedText} />
       </p>
       <div className="leading-relaxed">
         {textSegments.map((seg, idx) => {
           if (typeof seg === "string") return <span key={idx}>{seg}</span>;
 
-          const { correction, text } = seg;
+          const { correction } = seg;
+          const displayText =
+            correction.status === "accepted"
+              ? correction.corrected_segment
+              : correction.original_segment ||
+                (correction.status !== "rejected"
+                  ? correction.corrected_segment
+                  : "");
+
+          if (correction.status !== "pending") {
+            return <span key={correction.id}>{displayText}</span>;
+          }
+
           return (
             <span
               key={correction.id}
@@ -87,7 +103,7 @@ const TextEditor: React.FC<TextEditorProps> = ({
             >
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <span>{text}</span>
+                  <span>{displayText}</span>
                 </TooltipTrigger>
                 <TooltipContent className="w-60 bg-muted text-muted-foreground border border-border rounded-lg p-2 shadow-lg">
                   <div className="text-xs font-semibold">

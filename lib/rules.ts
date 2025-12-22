@@ -37,35 +37,19 @@ export function runRules(text: string): Correction[] {
     }
   });
 
-  // Rule 2: Missing commas in lists
-  const listRegex = /(\w+)\s+(\w+)\s+and\s+(\w+)/g;
-  let listMatch;
-  while ((listMatch = listRegex.exec(text))) {
-    corrections.push({
-      id: uuidv4(),
-      type: "punctuation",
-      original_segment: `${listMatch[1]} ${listMatch[2]} and`,
-      corrected_segment: `${listMatch[1]}, ${listMatch[2]}, and`,
-      explanation: "missing commas in list",
-      startIndex: listMatch.index,
-      endIndex: listMatch.index + `${listMatch[1]} ${listMatch[2]} and`.length,
-      status: "pending",
-    });
-  }
-
-  // Rule 3: Sentence-ending punctuation
-  if (!/[.!?]$/.test(text.trim())) {
-    corrections.push({
-      id: uuidv4(),
-      type: "punctuation",
-      original_segment: "",
-      corrected_segment: ".",
-      explanation: "missing sentence-ending punctuation",
-      startIndex: text.length,
-      endIndex: text.length,
-      status: "pending",
-    });
-  }
+  // // Rule 2: Sentence-ending punctuation
+  // if (!/[.!?]$/.test(text.trim())) {
+  //   corrections.push({
+  //     id: uuidv4(),
+  //     type: "punctuation",
+  //     original_segment: "",
+  //     corrected_segment: ".",
+  //     explanation: "missing sentence-ending punctuation",
+  //     startIndex: text.length,
+  //     endIndex: text.length,
+  //     status: "pending",
+  //   });
+  // }
 
   return corrections;
 }

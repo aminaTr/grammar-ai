@@ -188,3 +188,7 @@
     cursor: pointer;
   }
 }
+
+html {
+  scroll-behavior: smooth;
+}

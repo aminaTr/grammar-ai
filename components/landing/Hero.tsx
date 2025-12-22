@@ -1,5 +1,4 @@
-import Link from "next/link";
-import { buttonVariants } from "@/components/ui/button";
+"use client";
 
 export default function Hero() {
   return (
@@ -16,22 +15,6 @@ export default function Hero() {
               Your AI-powered grammar assistant that checks, corrects, and
               improves your writing in real-time.
             </p>
-
-            <div className="mt-10 flex justify-center md:justify-start gap-4 flex-wrap">
-              <Link
-                href="/register"
-                className={buttonVariants({ variant: "default", size: "lg" })}
-              >
-                Get Started
-              </Link>
-
-              <Link
-                href="/about"
-                className={buttonVariants({ variant: "outline", size: "lg" })}
-              >
-                Learn More
-              </Link>
-            </div>
           </div>
 
           {/* Right Image */}

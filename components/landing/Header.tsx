@@ -5,9 +5,19 @@ import Link from "next/link";
 import { Button } from "../ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { signOutUser } from "@/lib/auth";
+import { UserCog } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "../ui/dropdown-menu";
 
 function Header() {
-  const { userLoggedIn } = useAuth();
+  const { userLoggedIn, currentUser } = useAuth();
   return (
     <nav className="fixed top-0 right-0 left-0 z-50 px-6 py-2 border-b border-border/50 bg-background/80 backdrop-blur-md h-16">
       <div className="max-w-6xl mx-auto flex justify-between items-center">
@@ -23,22 +33,53 @@ function Header() {
         </Link>
 
         <div className="hidden md:flex items-center gap-8">
-          <a href="#" className="text-muted-foreground hover:text-foreground">
+          <a
+            href="/#About"
+            className="text-muted-foreground hover:text-foreground"
+          >
+            About
+          </a>
+          <a
+            href="/#HowItWorks"
+            className="text-muted-foreground hover:text-foreground"
+          >
             How it Works
           </a>
-          <a href="#" className="text-muted-foreground hover:text-foreground">
-            Pricing
-          </a>
-          <a href="#" className="text-muted-foreground hover:text-foreground">
-            About
+          <a
+            href="/grammar-checker"
+            className="text-muted-foreground hover:text-foreground"
+          >
+            Grammar Checker
           </a>
         </div>
 
         <div className="flex items-center gap-3">
           {userLoggedIn ? (
-            <Button size={"sm"} onClick={signOutUser}>
-              Sign Out
-            </Button>
+            <>
+              <Button size={"sm"} onClick={signOutUser}>
+                Sign Out
+              </Button>
+
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button size={"sm"} variant={"ghost"}>
+                    <UserCog className=" h-6 w-6" />{" "}
+                    <span className="sr-only">Profile</span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56" align="start">
+                  <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                  <DropdownMenuGroup>
+                    <DropdownMenuLabel>Profile</DropdownMenuLabel>
+                    <DropdownMenuLabel>{currentUser?.email}</DropdownMenuLabel>
+                  </DropdownMenuGroup>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={signOutUser}>
+                    Sign out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </>
           ) : (
             <>
               <Button variant={"ghost"} size={"sm"} asChild>

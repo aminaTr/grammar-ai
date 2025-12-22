@@ -1,9 +1,43 @@
-import type { ReactNode } from "react";
+// app/(auth)/layout.tsx
 
-export default function AuthLayout({ children }: { children: ReactNode }) {
+import type { Metadata } from "next";
+import { Geist, Geist_Mono } from "next/font/google";
+import { AuthProvider } from "@/contexts/AuthContext";
+import "../globals.css";
+import { Toaster } from "sonner";
+
+const geistSans = Geist({
+  variable: "--font-geist-sans",
+  subsets: ["latin"],
+});
+
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
+
+export const metadata: Metadata = {
+  title: "AI Grammar Checker",
+  description: "An AI-powered grammar checking application.",
+};
+
+export default function AuthLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-muted px-4">
-      {children}
-    </div>
+    <html lang="en">
+      <body
+        className={`${geistSans.variable} ${geistMono.variable} antialiased dark`}
+      >
+        <AuthProvider>
+          <main className="min-h-screen bg-background flex justify-center items-center">
+            {children}
+          </main>
+          <Toaster position="top-right" richColors />
+        </AuthProvider>
+      </body>
+    </html>
   );
 }

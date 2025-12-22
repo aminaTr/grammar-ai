@@ -13,7 +13,7 @@ import { auth } from "@/lib/firebase";
 interface AuthContextType {
   currentUser: User | null;
   setCurrentUser: (user: User | null) => void;
-  userLoggedIn: boolean;
+  userLoggedIn: boolean | null;
 }
 
 interface AuthProviderProps {
@@ -32,7 +32,7 @@ export function useAuth(): AuthContextType {
 
 export function AuthProvider({ children }: AuthProviderProps) {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
-  const [userLoggedIn, setUserLoggedIn] = useState(false);
+  const [userLoggedIn, setUserLoggedIn] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
