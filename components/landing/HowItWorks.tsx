@@ -11,24 +11,24 @@ const HowItWorks = () => {
           </h1>
           <ol className="text-sm text-muted-foreground justify-center leading-relaxed space-x-2 list-decimal list-inside">
             <li>
-              <strong>1. Sign In:</strong> You need to sign in or create an
-              account to use Grammar AI.
+              <strong>Sign In:</strong> You need to sign in or create an account
+              to use Grammar AI.
             </li>
             <li>
-              <strong>2. Enter Text:</strong> Type or paste your text into the
+              <strong>Enter Text:</strong> Type or paste your text into the
               editor for analysis.
             </li>
             <li>
-              <strong>3. Receive Suggestions:</strong> Grammar AI highlights
+              <strong>Receive Suggestions:</strong> Grammar AI highlights
               grammar, spelling, and punctuation issues. Hover over underlined
               words to see suggestions.
             </li>
             <li>
-              <strong>4. Accept or Reject:</strong> You can choose which
+              <strong>Accept or Reject:</strong> You can choose which
               corrections to apply. The text updates automatically.
             </li>
             <li>
-              <strong>5. Copy Text:</strong> Once satisfied, copy the corrected
+              <strong>Copy Text:</strong> Once satisfied, copy the corrected
               text or continue editing.
             </li>
           </ol>
