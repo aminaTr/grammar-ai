@@ -4,6 +4,12 @@ import { useState, useEffect } from "react";
 import { Correction } from "@/types/correction";
 import CopyButton from "../CopyButton";
 import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
+import {
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+} from "@/components/ui/popover";
+import { Button } from "../ui/button";
 
 interface TextEditorProps {
   originalText: string;
@@ -93,6 +99,32 @@ const TextEditor: React.FC<TextEditorProps> = ({
           if (correction.status !== "pending") {
             return <span key={correction.id}>{displayText}</span>;
           }
+          function CorrectionContent() {
+            return (
+              <>
+                <div className="text-xs font-semibold">
+                  {correction.type.toUpperCase()}
+                </div>
+                <div className="text-sm">{correction.explanation}</div>
+                <div className="flex justify-end gap-2 mt-2">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => onAccept(correction.id)}
+                  >
+                    Accept
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="destructive"
+                    onClick={() => onReject(correction.id)}
+                  >
+                    Reject
+                  </Button>
+                </div>
+              </>
+            );
+          }
 
           return (
             <span
@@ -101,7 +133,7 @@ const TextEditor: React.FC<TextEditorProps> = ({
                 correction.type
               )}`}
             >
-              <Tooltip>
+              {/* <Tooltip>
                 <TooltipTrigger asChild>
                   <span>{displayText}</span>
                 </TooltipTrigger>
@@ -125,7 +157,32 @@ const TextEditor: React.FC<TextEditorProps> = ({
                     </button>
                   </div>
                 </TooltipContent>
-              </Tooltip>
+              </Tooltip> */}
+              {/* Desktop – hover */}
+              <div className="hidden md:inline">
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span className="cursor-help">{displayText}</span>
+                  </TooltipTrigger>
+                  <TooltipContent className="w-60 bg-muted text-muted-foreground border border-border rounded-lg p-2 shadow-lg">
+                    <CorrectionContent />
+                  </TooltipContent>
+                </Tooltip>
+              </div>
+
+              {/* Mobile – tap */}
+              <div className="md:hidden inline">
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <span className="underline decoration-dotted cursor-pointer">
+                      {displayText}
+                    </span>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-72">
+                    <CorrectionContent />
+                  </PopoverContent>
+                </Popover>
+              </div>
             </span>
           );
         })}

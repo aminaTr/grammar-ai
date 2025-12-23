@@ -6,6 +6,8 @@ import { Button } from "../ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 import { signOutUser } from "@/lib/auth";
 import { UserCog } from "lucide-react";
+import { Menu } from "lucide-react";
+
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -29,7 +31,9 @@ function Header() {
             height={32}
             className="w-11"
           />
-          <span className="font-semibold text-lg font-sans">Grammar AI</span>
+          <span className="md:text-lg font-semibold text-sm font-sans">
+            Grammar AI
+          </span>
         </Link>
 
         <div className="hidden md:flex items-center gap-8">
@@ -56,7 +60,11 @@ function Header() {
         <div className="flex items-center gap-3">
           {userLoggedIn ? (
             <>
-              <Button size={"sm"} onClick={signOutUser}>
+              <Button
+                size={"sm"}
+                onClick={signOutUser}
+                className="hidden md:block"
+              >
                 Sign Out
               </Button>
 
@@ -90,6 +98,28 @@ function Header() {
               </Button>
             </>
           )}
+          <div className="md:hidden">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon">
+                  <Menu className="h-6 w-6" />
+                  <span className="sr-only">Open menu</span>
+                </Button>
+              </DropdownMenuTrigger>
+
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuItem asChild>
+                  <Link href="/#About">About</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/#HowItWorks">How it Works</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/grammar-checker">Grammar Checker</Link>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
         </div>
       </div>
     </nav>
