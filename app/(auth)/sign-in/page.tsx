@@ -6,7 +6,9 @@ import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { signin } from "@/lib/auth";
+// import { signin } from "@/lib/auth";  firebase helper
+import { signin } from "@/lib/auth/actions"; // supabase helper
+import GoogleLoginButton from "@/components/GoogleLoginButton";
 import { useRouter } from "next/navigation";
 import {
   Card,
@@ -110,11 +112,14 @@ const Page = () => {
               />
             </FieldGroup>
 
-            <Button type="submit" className="mt-4 w-full">
-              {isSigningIn ? "Signing In" : "Sign In"}
-              {isSigningIn && <Spinner className="ml-2" />}
-            </Button>
+            <FieldGroup className="mt-4">
+              <Button type="submit" className=" w-full">
+                {isSigningIn ? "Signing In" : "Sign In"}
+                {isSigningIn && <Spinner className="ml-2" />}
+              </Button>
+            </FieldGroup>
           </form>
+          <GoogleLoginButton />
         </CardContent>
 
         <CardFooter className="text-sm">

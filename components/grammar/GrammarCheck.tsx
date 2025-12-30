@@ -20,6 +20,7 @@ const GrammarCheck = () => {
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(false);
   const [activeCorrections, setActiveCorrections] = useState<Correction[]>([]);
+  const [sessionId, setSessionId] = useState<string>("");
   const char_limit = 100;
   const derivedText = useMemo(() => {
     if (!activeCorrections.length) return text;
@@ -64,8 +65,8 @@ const GrammarCheck = () => {
       }
 
       const data = await res.json();
-
       setActiveCorrections(data.corrections as Correction[]);
+      setSessionId(data.session_id);
 
       if (!data.corrections || data.corrections.length === 0) {
         return toast.success("No issues found! Your text looks great.");
@@ -99,6 +100,7 @@ const GrammarCheck = () => {
     setActiveCorrections((prev) =>
       prev.map((c) => (c.id === id ? { ...c, status: "accepted" } : c))
     );
+    updateCorrectionInDB(id, "accepted");
 
     toast.success(
       `Accepted correction: ${correction.original_segment} → ${correction.corrected_segment}`
@@ -109,8 +111,47 @@ const GrammarCheck = () => {
     setActiveCorrections((prev) =>
       prev.map((c) => (c.id === id ? { ...c, status: "rejected" } : c))
     );
-
+    updateCorrectionInDB(id, "rejected");
     toast.error("Correction rejected");
+  };
+
+  const updateCorrectionInDB = async (
+    correctionId: string,
+    status: "accepted" | "rejected"
+  ) => {
+    try {
+      // Compute corrected_text after status update
+      const updatedCorrections = activeCorrections.map((c) =>
+        c.id === correctionId ? { ...c, status } : c
+      );
+
+      const correctedText = updatedCorrections
+        .filter((c) => c.status === "accepted")
+        .sort((a, b) => b.startIndex - a.startIndex)
+        .reduce(
+          (textAcc, c) =>
+            textAcc.slice(0, c.startIndex) +
+            c.corrected_segment +
+            textAcc.slice(c.endIndex),
+          text
+        );
+
+      const res = await fetch(`/api/update-grammar-history/${sessionId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          correctionId,
+          status,
+          corrected_text: correctedText,
+        }),
+      });
+
+      if (!res.ok) {
+        console.error("Failed to update correction in DB");
+      }
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   return (

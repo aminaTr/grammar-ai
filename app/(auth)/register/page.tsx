@@ -6,10 +6,12 @@ import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { register } from "@/lib/auth";
+// import { register } from "@/lib/auth"; firebase helper
 import { useRouter } from "next/navigation";
 import { Spinner } from "@/components/ui/spinner";
 import { useAuth } from "@/contexts/AuthContext";
+import { register } from "@/lib/auth/actions"; // supabase helper
+
 import {
   Card,
   CardContent,
@@ -72,23 +74,21 @@ const page = () => {
   function onSubmit(data: z.infer<typeof formSchema>) {
     if (!isRegistering) {
       setIsRegistering(true);
+
       register(data.email, data.password)
-        .then((userCredential) => {
-          setCurrentUser(userCredential.user);
+        .then((result) => {
+          const user = result.user ?? null;
+          setCurrentUser(user);
           toast.success("Your account has been created successfully!");
-          router.push("/sign-in");
+          router.push("/sign-in"); // redirect after signup
         })
-        .catch((error) => {
-          console.log("error block");
-          const errorCode = error.code;
-          const errorMessage = error.message;
+        .catch((error: Error) => {
           setIsRegistering(false);
-          console.error("Registration error:", errorCode, errorMessage);
-          toast.error(`Registration failed: ${errorMessage}`);
+          console.error("Registration error:", error.message);
+          toast.error(`Registration failed: ${error.message}`);
         });
     }
   }
-
   return (
     <div className="flex w-full max-w-4xl shadow-lg rounded-xl overflow-hidden">
       <Card className="w-full sm:max-w-md rounded-none">

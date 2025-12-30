@@ -1,13 +1,19 @@
-import RequireAuth from "@/components/RequireAuth";
 import GrammarCheck from "@/components/grammar/GrammarCheck";
+import { createServerSupabase } from "@/lib/supabase/server";
+import { redirect } from "next/navigation";
 
-const GrammarPage = () => {
+const GrammarPage = async () => {
+  const supabase = await createServerSupabase();
+  const { data } = await supabase.auth.getUser();
+
+  if (!data.user) {
+    redirect("/sign-in");
+  }
+
   return (
-    <RequireAuth>
-      <div className="min-h-screen bg-background py-24">
-        <GrammarCheck />
-      </div>
-    </RequireAuth>
+    <div className="min-h-screen bg-background py-24">
+      <GrammarCheck />
+    </div>
   );
 };
 

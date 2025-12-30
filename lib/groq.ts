@@ -9,6 +9,7 @@ STRICT RULES:
 - If text is already correct, return it unchanged.
 - Do NOT combine multiple corrections into one; each correction must be atomic.
 - Do NOT invent errors.
+- Take care of context while providing corrections.
 
 OUTPUT RULES:
 - Output VALID JSON ONLY.

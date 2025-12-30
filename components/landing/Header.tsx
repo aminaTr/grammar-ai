@@ -4,7 +4,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { Button } from "../ui/button";
 import { useAuth } from "@/contexts/AuthContext";
-import { signOutUser } from "@/lib/auth";
+// import { signOutUser } from "@/lib/auth"; firebase helper
+import { signOutUser } from "@/lib/auth/actions"; // supabase helper
 import { UserCog } from "lucide-react";
 import { Menu } from "lucide-react";
 
@@ -78,10 +79,12 @@ function Header() {
                 <DropdownMenuContent className="w-56" align="start">
                   <DropdownMenuLabel>My Account</DropdownMenuLabel>
                   <DropdownMenuGroup>
-                    <DropdownMenuLabel>Profile</DropdownMenuLabel>
                     <DropdownMenuLabel>{currentUser?.email}</DropdownMenuLabel>
                   </DropdownMenuGroup>
                   <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link href="/profile">Profile</Link>
+                  </DropdownMenuItem>
                   <DropdownMenuItem onClick={signOutUser}>
                     Sign out
                   </DropdownMenuItem>
