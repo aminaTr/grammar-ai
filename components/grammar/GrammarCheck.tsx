@@ -15,6 +15,7 @@ import { Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import TextEditor from "@/components/grammar/TextEditor";
 import { Correction } from "@/types/correction";
+import { applyAcceptedCorrections } from "@/lib/applyCorrections";
 
 const GrammarCheck = () => {
   const [text, setText] = useState("");
@@ -22,24 +23,10 @@ const GrammarCheck = () => {
   const [activeCorrections, setActiveCorrections] = useState<Correction[]>([]);
   const [sessionId, setSessionId] = useState<string>("");
   const char_limit = 100;
-  const derivedText = useMemo(() => {
-    if (!activeCorrections.length) return text;
-
-    let result = text;
-
-    const accepted = activeCorrections
-      .filter((c) => c.status === "accepted")
-      .sort((a, b) => b.startIndex - a.startIndex);
-
-    accepted.forEach((c) => {
-      result =
-        result.slice(0, c.startIndex) +
-        c.corrected_segment +
-        result.slice(c.endIndex);
-    });
-    console.log("derived text", result);
-    return result;
-  }, [text, activeCorrections]);
+  const derivedText = useMemo(
+    () => applyAcceptedCorrections(text, activeCorrections),
+    [text, activeCorrections]
+  );
 
   const handleCheck = async () => {
     if (!text.trim()) return;
@@ -120,21 +107,11 @@ const GrammarCheck = () => {
     status: "accepted" | "rejected"
   ) => {
     try {
-      // Compute corrected_text after status update
       const updatedCorrections = activeCorrections.map((c) =>
         c.id === correctionId ? { ...c, status } : c
       );
 
-      const correctedText = updatedCorrections
-        .filter((c) => c.status === "accepted")
-        .sort((a, b) => b.startIndex - a.startIndex)
-        .reduce(
-          (textAcc, c) =>
-            textAcc.slice(0, c.startIndex) +
-            c.corrected_segment +
-            textAcc.slice(c.endIndex),
-          text
-        );
+      const correctedText = applyAcceptedCorrections(text, updatedCorrections);
 
       const res = await fetch(`/api/update-grammar-history/${sessionId}`, {
         method: "PATCH",
