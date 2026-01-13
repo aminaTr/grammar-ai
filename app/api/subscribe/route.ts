@@ -69,6 +69,30 @@ export async function POST(req: Request) {
           limit: 1,
         });
         const newPriceId = prices.data[0].id;
+        let stripeItemId = existingSub.stripe_item_id;
+
+        if (!stripeItemId) {
+          // Fetch subscription from Stripe
+          const subscription = await stripe.subscriptions.retrieve(
+            existingSub.stripe_subscription_id
+          );
+
+          stripeItemId = subscription.items.data[0]?.id;
+        }
+        if (!stripeItemId) {
+          console.error("Cannot update subscription: item ID is missing.");
+          return NextResponse.json({
+            success: false,
+            message:
+              "Subscription item ID is missing. Cannot update subscription.",
+          });
+        }
+        if (!existingSub?.stripe_item_id) {
+          await supabaseAdmin
+            .from("subscriptions")
+            .update({ stripe_item_id: stripeItemId })
+            .eq("stripe_subscription_id", existingSub.stripe_subscription_id);
+        }
 
         // Update subscription
         const session = await stripe.subscriptions.update(
