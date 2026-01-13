@@ -71,24 +71,39 @@ const page = () => {
     },
   });
 
-  function onSubmit(data: z.infer<typeof formSchema>) {
+  async function onSubmit(data: z.infer<typeof formSchema>) {
     if (!isRegistering) {
       setIsRegistering(true);
 
-      register(data.email, data.password)
-        .then((result) => {
-          const user = result.user ?? null;
-          setCurrentUser(user);
-          toast.success("Your account has been created successfully!");
-          router.push("/sign-in"); // redirect after signup
-        })
-        .catch((error: Error) => {
-          setIsRegistering(false);
-          console.error("Registration error:", error.message);
-          toast.error(`Registration failed: ${error.message}`);
-        });
+      try {
+        // Sign up the user
+        const result = await register(data.email, data.password);
+        const user = result.user ?? null;
+
+        // If user created, initialize free plan & credits
+        if (user) {
+          await fetch("/api/register-init", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              userId: user.id,
+              email: user.email,
+            }),
+          });
+        }
+
+        // Notify and redirect
+        toast.success("Your account has been created successfully!");
+        router.push("/sign-in");
+      } catch (error: any) {
+        console.error("Registration error:", error.message);
+        toast.error(`Registration failed: ${error.message}`);
+      } finally {
+        setIsRegistering(false);
+      }
     }
   }
+
   return (
     <div className="flex w-full max-w-4xl shadow-lg rounded-xl overflow-hidden">
       <Card className="w-full sm:max-w-md rounded-none">

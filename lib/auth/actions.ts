@@ -1,6 +1,4 @@
-import { createBrowserSupabase } from "@/lib/supabase/client";
-
-const supabase = createBrowserSupabase();
+import { supabase } from "@/lib/supabase/client";
 
 /**
  * Sign in with email + password

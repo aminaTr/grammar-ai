@@ -6,7 +6,7 @@ import { Button } from "../ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 // import { signOutUser } from "@/lib/auth"; firebase helper
 import { signOutUser } from "@/lib/auth/actions"; // supabase helper
-import { UserCog } from "lucide-react";
+import { Coins, LogOut, UserCog } from "lucide-react";
 import { Menu } from "lucide-react";
 
 import {
@@ -18,6 +18,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
+import { SubscriptionDropdown } from "./Date";
 
 function Header() {
   const { userLoggedIn, currentUser } = useAuth();
@@ -51,6 +52,12 @@ function Header() {
             How it Works
           </a>
           <a
+            href="/#pricing"
+            className="text-muted-foreground hover:text-foreground"
+          >
+            Pricing
+          </a>
+          <a
             href="/grammar-checker"
             className="text-muted-foreground hover:text-foreground"
           >
@@ -64,15 +71,22 @@ function Header() {
               <Button
                 size={"sm"}
                 onClick={signOutUser}
-                className="hidden md:block"
+                className="hidden md:block "
               >
-                Sign Out
+                <span className="flex gap-2 items-center">
+                  Sign Out
+                  <LogOut />
+                </span>
               </Button>
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button size={"sm"} variant={"ghost"}>
-                    <UserCog className=" h-6 w-6" />{" "}
+                  <Button
+                    size={"lg"}
+                    variant={"ghost"}
+                    className="rounded-full"
+                  >
+                    <UserCog className="h-36 w-36 " />{" "}
                     <span className="sr-only">Profile</span>
                   </Button>
                 </DropdownMenuTrigger>
@@ -80,6 +94,24 @@ function Header() {
                   <DropdownMenuLabel>My Account</DropdownMenuLabel>
                   <DropdownMenuGroup>
                     <DropdownMenuLabel>{currentUser?.email}</DropdownMenuLabel>
+                    <DropdownMenuLabel>
+                      <span className=" capitalize">{currentUser?.plan}</span>{" "}
+                      Subscription
+                    </DropdownMenuLabel>
+                    <SubscriptionDropdown />
+                    <DropdownMenuLabel>
+                      <span className="flex gap-1 items-center">
+                        Credits{" "}
+                        <span className=" capitalize">
+                          {currentUser?.credits}
+                        </span>
+                        <Coins
+                          className="text-amber-500"
+                          width={16}
+                          height={16}
+                        />
+                      </span>
+                    </DropdownMenuLabel>
                   </DropdownMenuGroup>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild>
@@ -116,6 +148,9 @@ function Header() {
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link href="/#HowItWorks">How it Works</Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link href="/#pricing">Pricing</Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link href="/grammar-checker">Grammar Checker</Link>

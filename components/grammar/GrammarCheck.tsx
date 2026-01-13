@@ -8,6 +8,7 @@ import {
   CardTitle,
   CardDescription,
 } from "../ui/card";
+import ModelSelect from "./ModelSelect";
 import { useMemo } from "react";
 import { Textarea } from "../ui/textarea";
 import { Button } from "../ui/button";
@@ -16,13 +17,16 @@ import { toast } from "sonner";
 import TextEditor from "@/components/grammar/TextEditor";
 import { Correction } from "@/types/correction";
 import { applyAcceptedCorrections } from "@/lib/applyCorrections";
+import { useAuth } from "@/contexts/AuthContext";
 
 const GrammarCheck = () => {
   const [text, setText] = useState("");
+  const [selectedModel, setSelectedModel] = useState("openai/gpt-oss-120b");
   const [loading, setLoading] = useState(false);
   const [activeCorrections, setActiveCorrections] = useState<Correction[]>([]);
   const [sessionId, setSessionId] = useState<string>("");
   const char_limit = 100;
+  const { currentUser, refreshCredits } = useAuth();
   const derivedText = useMemo(
     () => applyAcceptedCorrections(text, activeCorrections),
     [text, activeCorrections]
@@ -39,32 +43,34 @@ const GrammarCheck = () => {
     try {
       setLoading(true);
 
-      const res = await fetch("/api/grammar-check", {
+      const res = await fetch("/api/check-grammar", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ text }),
+        body: JSON.stringify({ text, model: selectedModel }),
       });
 
+      const data = await res.json();
+
       if (!res.ok) {
-        throw new Error("Failed to check grammar");
+        return toast.error(data.error || "Something went wrong");
       }
 
-      const data = await res.json();
       setActiveCorrections(data.corrections as Correction[]);
       setSessionId(data.session_id);
 
       if (!data.corrections || data.corrections.length === 0) {
         return toast.success("No issues found! Your text looks great.");
       }
-      toast.success("Grammar check completed");
+      toast.success(data.message || "Grammar check completed");
       console.log("activeCorrections", activeCorrections);
     } catch (err) {
       console.error(err);
       toast.error("Something went wrong");
     } finally {
       setLoading(false);
+      await refreshCredits();
     }
   };
 
@@ -133,7 +139,7 @@ const GrammarCheck = () => {
 
   return (
     <div className="max-w-6xl mx-auto px-4 pb-6 ">
-      <div className="flex justify-center">
+      <div className="flex justify-center ">
         <p className="text-sm text-muted-foreground font-extrabold leading-relaxed tracking-wide py-4">
           Type in the text you want to check for grammar, spelling or
           punctuation mistakes and let the AI do the rest of the job for you✨
@@ -143,9 +149,21 @@ const GrammarCheck = () => {
       <Card>
         <CardHeader>
           <CardTitle>Grammar Check</CardTitle>
-          <CardDescription>
-            Paste your text below and let AI improve clarity, grammar, and tone.
-          </CardDescription>
+
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <CardDescription className="sm:max-w-[70%]">
+              Paste your text below and let AI improve clarity, grammar, and
+              tone.
+            </CardDescription>
+
+            <div className="w-full sm:w-auto">
+              <ModelSelect
+                selectedModel={selectedModel}
+                setSelectedModel={setSelectedModel}
+                user={currentUser}
+              />
+            </div>
+          </div>
         </CardHeader>
 
         <CardContent className="space-y-6 max-width-4xl">

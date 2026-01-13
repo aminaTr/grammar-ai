@@ -1,52 +1,7 @@
-const SYSTEM_PROMPT = `SYSTEM INSTRUCTION: You are a grammar correction engine.
+import { PROMPTS } from "./constants/groqPrompts";
 
-STRICT RULES:
-- Only fix grammar, spelling, and punctuation.
-- Make sure all punctuation marks, including periods (.), full stops, question marks (?), exclamation marks (!), commas (,), semicolons (;), colons (:), and inverted commas ("") are correct.
-- Do NOT rewrite sentences or improve style.
-- Do NOT change meaning, tone, tense, or wording.
-- Do NOT add or remove sentences.
-- If text is already correct, return it unchanged.
-- Do NOT combine multiple corrections into one; each correction must be atomic.
-- Do NOT invent errors.
-- Take care of context while providing corrections.
-
-OUTPUT RULES:
-- Output VALID JSON ONLY.
-- Do NOT include explanations outside JSON.
-- Do NOT include <think>, reasoning, analysis, or commentary.
-- Exclude any text outside the JSON structure.
-- Do NOT include markdown or extra text.
-- Use 0-based character indexing.
-
-INDEXING RULES:
-- "startIndex" and "endIndex" refer to character positions in the ORIGINAL input text.
-- "endIndex" is exclusive.
-- For insertions (e.g., missing comma or period), set startIndex = endIndex = insertion position.
-- "original_segment" must exactly match the substring at [startIndex:endIndex].
-
-ALLOWED TYPES:
-- "grammar"
-- "spelling"
-- "punctuation"
-
-JSON SCHEMA (MUST MATCH EXACTLY):
-{
-  "original_text": "...",
-  "corrections": [
-    {
-      "type": "grammar | spelling | punctuation",
-      "original_segment": "...",
-      "corrected_segment": "...",
-      "explanation": "short reason",
-      "startIndex": 0,
-      "endIndex": 0
-    }
-  ]
-}
-`;
-
-export async function callLLM(text: string) {
+export async function callLLM(text: string, model: "openai/gpt-oss-120b") {
+  const SYSTEM_PROMPT = PROMPTS[model];
   const response = await fetch(
     "https://api.groq.com/openai/v1/chat/completions",
     {
@@ -56,7 +11,7 @@ export async function callLLM(text: string) {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "openai/gpt-oss-120b",
+        model: model,
         messages: [
           { role: "system", content: SYSTEM_PROMPT },
           { role: "user", content: text },
@@ -65,8 +20,31 @@ export async function callLLM(text: string) {
       }),
     }
   );
-
   const data = await response.json();
-  console.log("grok data", data.choices[0].message);
-  return JSON.parse(data.choices[0].message.content);
+  const tokensUsed = data.usage?.total_tokens ?? 0;
+  console.log(
+    data.usage.prompt_tokens,
+    data.usage.completion_tokens,
+    data.usage.total_tokens
+  );
+  const rawContent = data.choices[0].message.content;
+
+  return {
+    result: extractJsonFromLLM(rawContent),
+    usedTokens: tokensUsed,
+  };
+}
+
+function extractJsonFromLLM(content: string) {
+  // Remove <think>...</think> blocks (multiline safe)
+  const cleaned = content.replace(/<think>[\s\S]*?<\/think>/g, "").trim();
+
+  // Optional: safeguard against extra text before/after JSON
+  const jsonMatch = cleaned.match(/\{[\s\S]*\}$/);
+
+  if (!jsonMatch) {
+    throw new Error("No valid JSON found in LLM response");
+  }
+
+  return JSON.parse(jsonMatch[0]);
 }

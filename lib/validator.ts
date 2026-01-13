@@ -33,7 +33,6 @@ export function validateCorrections(
     if (!["grammar", "spelling", "punctuation"].includes(c.type)) return false;
 
     if (!c.corrected_segment || c.corrected_segment.trim() === "") return false;
-
     return true;
   });
 }
